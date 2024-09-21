@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const Admin = require('../model/adminModel');
+const Teacher = require('../model/teacherModel');
 
 module.exports.signup = async (req, res, next) => {
 	const { username, email, password } = req.body;
@@ -65,5 +66,32 @@ module.exports.signin = async (req, res, next) => {
 };
 
 module.exports.createTeacher = async (req, res, next) => {
-	console.log('hello');
+	const { name, email, username, password, subjects } = req.body;
+	try {
+		const teacher = await Teacher.findOne({ username });
+		if (teacher) {
+			return res
+				.status(403)
+				.json({ msg: 'Teacher already exist', status: false });
+		}
+
+		const hashedPassword = bcrypt.hashSync(password, 10);
+		const obj = {
+			name,
+			email,
+			username,
+			password: hashedPassword,
+			subjects,
+		};
+
+		const newTeacher = new Teacher(obj);
+		delete req.body.password;
+		newTeacher.save();
+
+		return res
+			.status(201)
+			.json({ msg: 'Teacher created successfully', status: true });
+	} catch (err) {
+		next(err);
+	}
 };
