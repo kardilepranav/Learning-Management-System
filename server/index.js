@@ -17,7 +17,7 @@ mongoose
 		console.log('DB Connection successfull');
 	})
 	.catch((err) => {
-		console.log(err);
+		console.log(err.message);
 	});
 
 app.use('/admin', adminRoutes);
