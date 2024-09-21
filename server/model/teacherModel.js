@@ -28,6 +28,19 @@ const teacherSchema = mongoose.Schema({
 		min: 8,
 		max: 20,
 	},
+	phoneNo: {
+		type: Number,
+		required: true,
+		min: 10,
+		max: 10,
+		unique: true,
+	},
+	address: {
+		type: String,
+		required: true,
+		min: 5,
+		max: 40,
+	},
 	subjects: [],
 });
 

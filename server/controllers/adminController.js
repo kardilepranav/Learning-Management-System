@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const Admin = require('../model/adminModel');
 const Teacher = require('../model/teacherModel');
+const User = require('../model/userModel');
 
 module.exports.signup = async (req, res, next) => {
 	const { username, email, password } = req.body;
@@ -66,13 +67,14 @@ module.exports.signin = async (req, res, next) => {
 };
 
 module.exports.createTeacher = async (req, res, next) => {
-	const { name, email, username, password, subjects } = req.body;
+	const { name, email, username, password, phoneNo, address, subjects } =
+		req.body;
 	try {
 		const teacher = await Teacher.findOne({ username });
 		if (teacher) {
 			return res
 				.status(403)
-				.json({ msg: 'Teacher already exist', status: false });
+				.json({ msg: 'Teacher already exists', status: false });
 		}
 
 		const hashedPassword = bcrypt.hashSync(password, 10);
@@ -81,6 +83,8 @@ module.exports.createTeacher = async (req, res, next) => {
 			email,
 			username,
 			password: hashedPassword,
+			phoneNo,
+			address,
 			subjects,
 		};
 
@@ -91,6 +95,53 @@ module.exports.createTeacher = async (req, res, next) => {
 		return res
 			.status(201)
 			.json({ msg: 'Teacher created successfully', status: true });
+	} catch (err) {
+		next(err);
+	}
+};
+
+module.exports.createUser = async (req, res, next) => {
+	const {
+		name,
+		email,
+		username,
+		password,
+		selfPhoneNo,
+		parentsPhoneNo,
+		address,
+		batch,
+	} = req.body;
+
+	try {
+		const user = await User.findOne({ username });
+		if (user) {
+			return res
+				.status(403)
+				.json({ msg: 'User already exists', status: false });
+		}
+
+		const hashedPassword = bcrypt.hashSync(password, 10);
+		const obj = {
+			name,
+			email,
+			username,
+			password: hashedPassword,
+			selfPhoneNo,
+			parentsPhoneNo,
+			address,
+			batch,
+		};
+		const newUser = new User(obj);
+		delete req.body.password;
+		newUser.save();
+
+		const token = jwt.sign({ username, role: 'user' }, process.env.SECRET, {
+			expiresIn: '1h',
+		});
+
+		res
+			.status(201)
+			.json({ msg: 'User created successfully', token, status: true });
 	} catch (err) {
 		next(err);
 	}
