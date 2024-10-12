@@ -29,7 +29,7 @@ const teacherSchema = mongoose.Schema({
 		max: 20,
 	},
 	phoneNo: {
-		type: Number,
+		type: String,
 		required: true,
 		min: 10,
 		max: 10,

@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const Admin = require('../model/adminModel');
 const Teacher = require('../model/teacherModel');
 const User = require('../model/userModel');
+const { mongo } = require('mongoose');
 
 module.exports.signup = async (req, res, next) => {
 	const { username, email, password } = req.body;
@@ -100,6 +101,35 @@ module.exports.createTeacher = async (req, res, next) => {
 	}
 };
 
+module.exports.teachers = async (req, res, next) => {
+	const teachers = await Teacher.find();
+	try {
+		if (!teachers.length) {
+			return res.status(404).json({ msg: 'No Teachers found', status: false });
+		}
+
+		return res.status(200).json({ teachers, status: true });
+	} catch (err) {
+		next(err);
+	}
+};
+
+module.exports.deleteTeacher = async (req, res, next) => {
+	const id = req.params.teacherId;
+	try {
+		const teacher = await Teacher.findByIdAndDelete(id);
+		if (!teacher) {
+			return res.status(404).json({ msg: 'Teacher not found', status: false });
+		}
+
+		return res
+			.status(200)
+			.json({ msg: 'Teacher deleted successfully', status: true });
+	} catch (err) {
+		next(err);
+	}
+};
+
 module.exports.createUser = async (req, res, next) => {
 	const {
 		name,
@@ -139,10 +169,37 @@ module.exports.createUser = async (req, res, next) => {
 			expiresIn: '1h',
 		});
 
-		res
+		return res
 			.status(201)
 			.json({ msg: 'User created successfully', token, status: true });
 	} catch (err) {
 		next(err);
 	}
 };
+
+module.exports.users = async (req, res, next) => {
+	try {
+		const users = await User.find();
+		if (!users.length) {
+			return res.status(404).json({ msg: 'Users not found', status: false });
+		}
+
+		return res.status(200).json({ users, status: true });
+	} catch (err) {
+		next(err);
+	}
+};
+
+module.exports.deleteUser = async (req, res, next) => {
+	const id = req.params.userId
+	try {
+		const user = await User.findByIdAndDelete(id)
+		if (!user) {
+			return res.status(404).json({msg: 'User not found', status: false})
+		}
+
+		return res.status(200).json({msg: 'User deleted successfully', status: true})
+	} catch (err) {
+		next(err)
+	}
+}
