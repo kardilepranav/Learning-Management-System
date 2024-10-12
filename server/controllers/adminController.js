@@ -114,6 +114,20 @@ module.exports.teachers = async (req, res, next) => {
 	}
 };
 
+module.exports.findByTeacherId = async (req, res, next) => {
+	const id = req.params.teacherId;
+	try {
+		const teacher = await Teacher.findById(id);
+		if (!teacher) {
+			return res.status(404).json({ msg: 'Teacher not found', status: false });
+		}
+
+		return res.status(200).json({ teacher, status: true });
+	} catch (err) {
+		next(err);
+	}
+};
+
 module.exports.deleteTeacher = async (req, res, next) => {
 	const id = req.params.teacherId;
 	try {
@@ -190,16 +204,32 @@ module.exports.users = async (req, res, next) => {
 	}
 };
 
-module.exports.deleteUser = async (req, res, next) => {
-	const id = req.params.userId
+module.exports.findByUserId = async (req, res, next) => {
+	const id = req.params.userId;
 	try {
-		const user = await User.findByIdAndDelete(id)
+		const user = await User.findById(id);
 		if (!user) {
-			return res.status(404).json({msg: 'User not found', status: false})
+			return res.status(404).json({ msg: 'user not found', status: false });
 		}
 
-		return res.status(200).json({msg: 'User deleted successfully', status: true})
+		return res.status(200).json({ user, status: true });
 	} catch (err) {
-		next(err)
+		next(err);
 	}
-}
+};
+
+module.exports.deleteUser = async (req, res, next) => {
+	const id = req.params.userId;
+	try {
+		const user = await User.findByIdAndDelete(id);
+		if (!user) {
+			return res.status(404).json({ msg: 'User not found', status: false });
+		}
+
+		return res
+			.status(200)
+			.json({ msg: 'User deleted successfully', status: true });
+	} catch (err) {
+		next(err);
+	}
+};
