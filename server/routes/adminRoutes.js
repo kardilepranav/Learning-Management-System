@@ -11,10 +11,12 @@ const {
 	deleteUser,
 	findByTeacherId,
 	findByUserId,
+	changePassword,
 } = require('../controllers/adminController');
 
 router.post('/signup', signup);
 router.post('/signin', signin);
+router.put('/change-password', authorizeJwt, changePassword);
 router.post('/create-teacher', authorizeJwt, createTeacher);
 router.get('/teachers', authorizeJwt, teachers);
 router.get('/teachers/:teacherId', authorizeJwt, findByTeacherId)

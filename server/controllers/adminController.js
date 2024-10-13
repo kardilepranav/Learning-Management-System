@@ -33,7 +33,9 @@ module.exports.signup = async (req, res) => {
 			.status(201)
 			.json({ message: 'Admin created successfully', token, status: true });
 	} catch (error) {
-		res.status(500).json({ message: 'Server error', error, status: false });
+		return res
+			.status(500)
+			.json({ message: 'Server error', error, status: false });
 	}
 };
 
@@ -62,7 +64,52 @@ module.exports.signin = async (req, res) => {
 			.status(200)
 			.json({ message: 'Signin succesfull', token, status: true });
 	} catch (error) {
-		res.status(500).json({ message: 'Server error', error, status: false });
+		return res
+			.status(500)
+			.json({ message: 'Server error', error, status: false });
+	}
+};
+
+module.exports.changePassword = async (req, res) => {
+	const { currentPassword, newPassword } = req.body;
+	const username = req.user.username;
+	try {
+		const admin = await Admin.findOne({ username });
+		if (!admin) {
+			return res
+				.status(404)
+				.json({ message: 'Admin not found', status: false });
+		}
+
+		const isMatch = bcrypt.compareSync(currentPassword, admin.password);
+		if (!isMatch) {
+			return res
+				.status(400)
+				.json({ message: 'Incorrect current password', status: false });
+		}
+
+		if (currentPassword === newPassword) {
+			return res.status(403).json({
+				message: 'Password should not be same as current password',
+				status: false,
+			});
+		}
+
+		delete req.body.currentPassword;
+
+		const hashedPassword = bcrypt.hashSync(newPassword, 10);
+		admin.password = hashedPassword;
+		admin.save();
+
+		delete req.body.newPassword;
+
+		return res
+			.status(200)
+			.json({ message: 'Password changed successfully', status: true });
+	} catch (error) {
+		return res
+			.status(500)
+			.json({ message: 'Server error', error, status: false });
 	}
 };
 
@@ -96,7 +143,9 @@ module.exports.createTeacher = async (req, res) => {
 			.status(201)
 			.json({ message: 'Teacher created successfully', status: true });
 	} catch (error) {
-		res.status(500).json({ message: 'Server error', error, status: false });
+		return res
+			.status(500)
+			.json({ message: 'Server error', error, status: false });
 	}
 };
 
@@ -104,12 +153,16 @@ module.exports.teachers = async (req, res) => {
 	const teachers = await Teacher.find();
 	try {
 		if (!teachers.length) {
-			return res.status(404).json({ message: 'No Teachers found', status: false });
+			return res
+				.status(404)
+				.json({ message: 'No Teachers found', status: false });
 		}
 
 		return res.status(200).json({ teachers, status: true });
 	} catch (error) {
-		res.status(500).json({ message: 'Server error', error, status: false });
+		return res
+			.status(500)
+			.json({ message: 'Server error', error, status: false });
 	}
 };
 
@@ -118,12 +171,16 @@ module.exports.findByTeacherId = async (req, res) => {
 	try {
 		const teacher = await Teacher.findById(id);
 		if (!teacher) {
-			return res.status(404).json({ message: 'Teacher not found', status: false });
+			return res
+				.status(404)
+				.json({ message: 'Teacher not found', status: false });
 		}
 
 		return res.status(200).json({ teacher, status: true });
 	} catch (error) {
-		res.status(500).json({ message: 'Server error', error, status: false });
+		return res
+			.status(500)
+			.json({ message: 'Server error', error, status: false });
 	}
 };
 
@@ -132,14 +189,18 @@ module.exports.deleteTeacher = async (req, res) => {
 	try {
 		const teacher = await Teacher.findByIdAndDelete(id);
 		if (!teacher) {
-			return res.status(404).json({ message: 'Teacher not found', status: false });
+			return res
+				.status(404)
+				.json({ message: 'Teacher not found', status: false });
 		}
 
 		return res
 			.status(200)
 			.json({ message: 'Teacher deleted successfully', status: true });
 	} catch (error) {
-		res.status(500).json({ message: 'Server error', error, status: false });
+		return res
+			.status(500)
+			.json({ message: 'Server error', error, status: false });
 	}
 };
 
@@ -182,7 +243,9 @@ module.exports.createUser = async (req, res) => {
 			.status(201)
 			.json({ message: 'User created successfully', status: true });
 	} catch (error) {
-		res.status(500).json({ message: 'Server error', error, status: false });
+		return res
+			.status(500)
+			.json({ message: 'Server error', error, status: false });
 	}
 };
 
@@ -190,12 +253,16 @@ module.exports.users = async (req, res) => {
 	try {
 		const users = await User.find();
 		if (!users.length) {
-			return res.status(404).json({ message: 'Users not found', status: false });
+			return res
+				.status(404)
+				.json({ message: 'Users not found', status: false });
 		}
 
 		return res.status(200).json({ users, status: true });
 	} catch (error) {
-		res.status(500).json({ message: 'Server error', error, status: false });
+		return res
+			.status(500)
+			.json({ message: 'Server error', error, status: false });
 	}
 };
 
@@ -209,7 +276,9 @@ module.exports.findByUserId = async (req, res) => {
 
 		return res.status(200).json({ user, status: true });
 	} catch (error) {
-		res.status(500).json({ message: 'Server error', error, status: false });
+		return res
+			.status(500)
+			.json({ message: 'Server error', error, status: false });
 	}
 };
 
@@ -225,6 +294,8 @@ module.exports.deleteUser = async (req, res) => {
 			.status(200)
 			.json({ message: 'User deleted successfully', status: true });
 	} catch (error) {
-		res.status(500).json({ message: 'Server error', error, status: false });
+		return res
+			.status(500)
+			.json({ message: 'Server error', error, status: false });
 	}
 };
