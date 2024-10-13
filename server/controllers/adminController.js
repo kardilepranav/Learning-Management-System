@@ -32,8 +32,8 @@ module.exports.signup = async (req, res, next) => {
 		return res
 			.status(201)
 			.json({ msg: 'Admin created successfully', token, status: true });
-	} catch (err) {
-		next(err);
+	} catch (error) {
+		res.status(500).json({ message: 'Server error', error, status: false });
 	}
 };
 
@@ -61,8 +61,8 @@ module.exports.signin = async (req, res, next) => {
 		return res
 			.status(200)
 			.json({ msg: 'Signin succesfull', token, status: true });
-	} catch (err) {
-		next(err);
+	} catch (error) {
+		res.status(500).json({ message: 'Server error', error, status: false });
 	}
 };
 
@@ -95,8 +95,8 @@ module.exports.createTeacher = async (req, res, next) => {
 		return res
 			.status(201)
 			.json({ msg: 'Teacher created successfully', status: true });
-	} catch (err) {
-		next(err);
+	} catch (error) {
+		res.status(500).json({ message: 'Server error', error, status: false });
 	}
 };
 
@@ -108,8 +108,8 @@ module.exports.teachers = async (req, res, next) => {
 		}
 
 		return res.status(200).json({ teachers, status: true });
-	} catch (err) {
-		next(err);
+	} catch (error) {
+		res.status(500).json({ message: 'Server error', error, status: false });
 	}
 };
 
@@ -122,8 +122,8 @@ module.exports.findByTeacherId = async (req, res, next) => {
 		}
 
 		return res.status(200).json({ teacher, status: true });
-	} catch (err) {
-		next(err);
+	} catch (error) {
+		res.status(500).json({ message: 'Server error', error, status: false });
 	}
 };
 
@@ -138,8 +138,8 @@ module.exports.deleteTeacher = async (req, res, next) => {
 		return res
 			.status(200)
 			.json({ msg: 'Teacher deleted successfully', status: true });
-	} catch (err) {
-		next(err);
+	} catch (error) {
+		res.status(500).json({ message: 'Server error', error, status: false });
 	}
 };
 
@@ -181,8 +181,8 @@ module.exports.createUser = async (req, res, next) => {
 		return res
 			.status(201)
 			.json({ msg: 'User created successfully', status: true });
-	} catch (err) {
-		next(err);
+	} catch (error) {
+		res.status(500).json({ message: 'Server error', error, status: false });
 	}
 };
 
@@ -194,8 +194,8 @@ module.exports.users = async (req, res, next) => {
 		}
 
 		return res.status(200).json({ users, status: true });
-	} catch (err) {
-		next(err);
+	} catch (error) {
+		res.status(500).json({ message: 'Server error', error, status: false });
 	}
 };
 
@@ -208,8 +208,8 @@ module.exports.findByUserId = async (req, res, next) => {
 		}
 
 		return res.status(200).json({ user, status: true });
-	} catch (err) {
-		next(err);
+	} catch (error) {
+		res.status(500).json({ message: 'Server error', error, status: false });
 	}
 };
 
@@ -224,7 +224,7 @@ module.exports.deleteUser = async (req, res, next) => {
 		return res
 			.status(200)
 			.json({ msg: 'User deleted successfully', status: true });
-	} catch (err) {
-		next(err);
+	} catch (error) {
+		res.status(500).json({ message: 'Server error', error, status: false });
 	}
 };
