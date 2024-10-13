@@ -3,7 +3,6 @@ const jwt = require('jsonwebtoken');
 const Admin = require('../model/adminModel');
 const Teacher = require('../model/teacherModel');
 const User = require('../model/userModel');
-const { mongo } = require('mongoose');
 
 module.exports.signup = async (req, res, next) => {
 	const { username, email, password } = req.body;
@@ -179,13 +178,9 @@ module.exports.createUser = async (req, res, next) => {
 		delete req.body.password;
 		newUser.save();
 
-		const token = jwt.sign({ username, role: 'user' }, process.env.SECRET, {
-			expiresIn: '1h',
-		});
-
 		return res
 			.status(201)
-			.json({ msg: 'User created successfully', token, status: true });
+			.json({ msg: 'User created successfully', status: true });
 	} catch (err) {
 		next(err);
 	}

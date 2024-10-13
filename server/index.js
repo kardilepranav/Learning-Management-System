@@ -21,8 +21,8 @@ mongoose
 	});
 
 app.use('/admin', adminRoutes);
-app.use('/user', userRoutes);
 app.use('/teacher', teacherRoutes);
+app.use('/user', userRoutes);
 
 app.listen(process.env.PORT, () => {
 	console.log(`Server listening at port ${process.env.PORT}`);
