@@ -60,6 +60,22 @@ module.exports.signin = async (req, res) => {
 	}
 };
 
+module.exports.logout = async (req, res) => {
+	try {
+		res.clearCookie('refreshToken', {
+			httpOnly: true,
+			secure: true,
+			sameSite: 'strict',
+		});
+
+		return res.status(200).json({ message: 'Logged out successfully' });
+	} catch (error) {
+		return res
+			.status(500)
+			.json({ message: 'Server error', error, status: false });
+	}
+};
+
 module.exports.changePassowrd = async (req, res) => {
 	const { currentPassword, newPassword } = req.body;
 	const username = req.user.username;

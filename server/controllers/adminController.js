@@ -19,7 +19,7 @@ module.exports.refreshToken = async (req, res) => {
 			return res.status(403).json({ message: 'Invalid token', status: false });
 		}
 
-		const accessToken = createAccessToken({ id: user.id, role: 'admin'});
+		const accessToken = createAccessToken({ id: user.id, role: 'admin' });
 		return res.json({ accessToken });
 	});
 };
@@ -72,7 +72,7 @@ module.exports.signin = async (req, res) => {
 				.status(401)
 				.json({ message: 'Invalid username or password', status: false });
 		}
-		
+
 		const accessToken = createAccessToken(admin, 'admin');
 		const refreshToken = createRefreshToken(admin, 'admin');
 
@@ -86,6 +86,22 @@ module.exports.signin = async (req, res) => {
 		return res
 			.status(200)
 			.json({ message: 'Signin succesfull', accessToken, status: true });
+	} catch (error) {
+		return res
+			.status(500)
+			.json({ message: 'Server error', error, status: false });
+	}
+};
+
+module.exports.logout = async (req, res) => {
+	try {
+		res.clearCookie('refreshToken', {
+			httpOnly: true,
+			secure: true,
+			sameSite: 'strict',
+		});
+
+		return res.status(200).json({ message: 'Logged out successfully' });
 	} catch (error) {
 		return res
 			.status(500)
