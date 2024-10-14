@@ -1,8 +1,28 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const {
+	createAccessToken,
+	createRefreshToken,
+} = require('../auth/createTokens');
 const Admin = require('../model/adminModel');
 const Teacher = require('../model/teacherModel');
 const User = require('../model/userModel');
+
+module.exports.refreshToken = async (req, res) => {
+	const refreshToken = req.cookies.refreshToken;
+	if (!refreshToken) {
+		return res.status(404).json({ message: 'Unathorized', status: false });
+	}
+
+	jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
+		if (err) {
+			return res.status(403).json({ message: 'Invalid token', status: false });
+		}
+
+		const accessToken = createAccessToken({ id: user.id, role: 'admin'});
+		return res.json({ accessToken });
+	});
+};
 
 module.exports.signup = async (req, res) => {
 	const { username, email, password } = req.body;
@@ -25,13 +45,10 @@ module.exports.signup = async (req, res) => {
 		delete req.body.password;
 		newAdmin.save();
 
-		const token = jwt.sign({ username, role: 'admin' }, process.env.SECRET, {
-			expiresIn: '1h',
+		return res.status(201).json({
+			message: 'Account created successfully. Please signin.',
+			status: true,
 		});
-
-		return res
-			.status(201)
-			.json({ message: 'Admin created successfully', token, status: true });
 	} catch (error) {
 		return res
 			.status(500)
@@ -55,14 +72,20 @@ module.exports.signin = async (req, res) => {
 				.status(401)
 				.json({ message: 'Invalid username or password', status: false });
 		}
+		
+		const accessToken = createAccessToken(admin, 'admin');
+		const refreshToken = createRefreshToken(admin, 'admin');
 
-		const token = jwt.sign({ username, role: 'admin' }, process.env.SECRET, {
-			expiresIn: '1h',
+		res.cookie('refreshToken', refreshToken, {
+			httpOnly: true,
+			secure: true,
+			sameSite: 'strict',
+			maxAge: 7 * 24 * 60 * 1000,
 		});
 
 		return res
 			.status(200)
-			.json({ message: 'Signin succesfull', token, status: true });
+			.json({ message: 'Signin succesfull', accessToken, status: true });
 	} catch (error) {
 		return res
 			.status(500)

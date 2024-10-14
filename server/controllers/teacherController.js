@@ -1,7 +1,27 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const {
+	createAccessToken,
+	createRefreshToken,
+} = require('../auth/createTokens');
 const Teacher = require('../model/teacherModel');
 const User = require('../model/userModel');
+
+module.exports.refreshToken = async (req, res) => {
+	const refreshToken = req.cookies.refreshToken;
+	if (!refreshToken) {
+		return res.status(404).json({ message: 'Unathorized', status: false });
+	}
+
+	jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
+		if (err) {
+			return res.status(403).json({ message: 'Invalid token', status: false });
+		}
+
+		const accessToken = createAccessToken({ id: user.id, role: 'teacher' });
+		return res.json({ accessToken });
+	});
+};
 
 module.exports.signin = async (req, res) => {
 	const { username, password } = req.body;
@@ -22,13 +42,19 @@ module.exports.signin = async (req, res) => {
 
 		delete req.body.password;
 
-		const token = jwt.sign({ username, role: 'teacher' }, process.env.SECRET, {
-			expiresIn: '1h',
+		const accessToken = createAccessToken(teacher, 'teacher');
+		const refreshToken = createRefreshToken(teacher, 'teacher');
+
+		res.cookie('refreshToken', refreshToken, {
+			httpOnly: true,
+			secure: true,
+			sameSite: 'strict',
+			maxAge: 7 * 24 * 60 * 1000,
 		});
 
 		return res
 			.status(200)
-			.json({ message: 'Signin successfully', token, status: true });
+			.json({ message: 'Signin successfully', accessToken, status: true });
 	} catch (error) {
 		res.status(500).json({ message: 'Server error', error });
 	}
@@ -40,7 +66,9 @@ module.exports.changePassowrd = async (req, res) => {
 	try {
 		const teacher = await Teacher.findOne({ username });
 		if (!teacher) {
-			return res.status(404).json({ message: 'Teacher not found', status: false });
+			return res
+				.status(404)
+				.json({ message: 'Teacher not found', status: false });
 		}
 
 		const isMatch = bcrypt.compareSync(currentPassword, teacher.password);
@@ -51,12 +79,10 @@ module.exports.changePassowrd = async (req, res) => {
 		}
 
 		if (currentPassword === newPassword) {
-			return res
-				.status(403)
-				.json({
-					message: 'Password should not be same as current password',
-					status: false,
-				});
+			return res.status(403).json({
+				message: 'Password should not be same as current password',
+				status: false,
+			});
 		}
 		delete req.body.currentPassword;
 		const hashedPassword = bcrypt.hashSync(newPassword, 10);

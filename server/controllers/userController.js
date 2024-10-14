@@ -1,6 +1,26 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const {
+	createAccessToken,
+	createRefreshToken,
+} = require('../auth/createTokens');
 const User = require('../model/userModel');
+
+module.exports.refreshToken = async (req, res) => {
+	const refreshToken = req.cookies.refreshToken;
+	if (!refreshToken) {
+		return res.status(404).json({ message: 'Unathorized', status: false });
+	}
+
+	jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
+		if (err) {
+			return res.status(403).json({ message: 'Invalid token', status: false });
+		}
+
+		const accessToken = createAccessToken({ id: user.id, role: 'user' });
+		return res.json({ accessToken });
+	});
+};
 
 module.exports.signin = async (req, res) => {
 	const { username, password } = req.body;
@@ -19,15 +39,21 @@ module.exports.signin = async (req, res) => {
 				.json({ message: 'Invalid username or password', status: false });
 		}
 
-		const token = jwt.sign({ username, role: 'user' }, process.env.SECRET, {
-			expiresIn: '1h',
+		const accessToken = createAccessToken(user, 'user');
+		const refreshToken = createRefreshToken(user, 'user');
+
+		res.cookie('refreshToken', refreshToken, {
+			httpOnly: true,
+			secure: true,
+			sameSite: 'strict',
+			maxAge: 7 * 24 * 60 * 1000,
 		});
 
 		delete req.body.password;
 
 		return res
 			.status(200)
-			.json({ message: 'Signin successfully', token, status: true });
+			.json({ message: 'Signin successfully', accessToken, status: true });
 	} catch (error) {
 		return res
 			.status(500)
@@ -57,14 +83,14 @@ module.exports.changePassword = async (req, res) => {
 				status: false,
 			});
 		}
-    delete req.body.currentPassword;
+		delete req.body.currentPassword;
 
-    const hashedPassword = bcrypt.hashSync(newPassword, 10);
-    user.password = hashedPassword;
-    user.save();
+		const hashedPassword = bcrypt.hashSync(newPassword, 10);
+		user.password = hashedPassword;
+		user.save();
 
-    delete req.body.newPassword;
-    
+		delete req.body.newPassword;
+
 		return res
 			.status(200)
 			.json({ message: 'Password changed successfully', status: true });
