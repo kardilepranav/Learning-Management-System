@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser')
+const tokenRoutes = require('./routes/tokenRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const userRoutes = require('./routes/userRoutes');
 const teacherRoutes = require('./routes/teacherRoutes');
@@ -22,6 +23,7 @@ mongoose
 		console.log(err.message);
 	});
 
+app.use('/token', tokenRoutes);
 app.use('/admin', adminRoutes);
 app.use('/teacher', teacherRoutes);
 app.use('/user', userRoutes);

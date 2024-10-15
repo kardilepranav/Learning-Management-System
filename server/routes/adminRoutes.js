@@ -13,11 +13,9 @@ const {
 	findByTeacherId,
 	findByUserId,
 	changePassword,
-	refreshToken,
 	logout,
 } = require('../controllers/adminController');
 
-router.post('/refresh-token', refreshToken);
 router.post('/signup', signup);
 router.post('/signin', signin);
 router.post('/logout', logout);
